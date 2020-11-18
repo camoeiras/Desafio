@@ -1,0 +1,52 @@
+2)
+*Contagem de Pageviews
+=> select count(pageViews) from totals;
+
+*Num de sessoes por usuario
+=> select i.fullVisitorId, count(t.hits) from totals t
+    inner join identity i on i.fullVisitorId = t.fullVisitorId
+   group by i.fullVisitorId;
+
+*Sessoes distintas por data
+=> select distinct i.date, count(t.visits) from totals t
+    inner join identity i on i.fullVisitorId = t.fullVisitorId
+   group by i.date;
+
+*Media de duracao da sessao por data
+=> select i.date ,avg(t.timeonSite) from totals t
+    inner join identity i on i.fullVisitorId = t.fullVisitorId
+   group by i.date;
+
+*Sessoes diarias por tipo de browser
+=> select d.browser, count(t.visits) from totals t
+    inner join identity i on i.fullVisitorId = t.fullVisitorId
+    inner join device d on d.fullVisitorId = i.fullVisitorId
+   where i.date = day(i.date)
+   group by d.browser;
+
+   3)
+    from pyspark.sql import *
+
+    Product = Row("localProductPrice", "productBand", "productPrice", "productRevenue", "productSKU", "productVariant", "productId")
+    Hit = Row("datasource", "sourcePropertyinfo", "hitNumber", "eventCategory", "sourcePropertyTrackingId", "Date", "eventAction")
+
+    print(Product)
+    print(Hit)
+
+    df1 = spark.DataFrame(Product)
+    display(df1)
+
+    df2 = spark.DataFrame(Hit)
+    display(df2)
+
+    unionDf3 = df1.union(df2)
+    display(unionDf3)
+
+    unionDf3.createOrReplaceTempView("Product_Hit")
+
+    querie_df3 =  spark.sql('''
+        select * from Product_Hit
+    ''')
+
+    querie_df3.explain()
+
